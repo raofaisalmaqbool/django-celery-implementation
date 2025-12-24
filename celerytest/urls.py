@@ -1,18 +1,17 @@
 """
-URL configuration for celerytest project.
+Main URL Configuration for Celery Test Project
+==============================================
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+This module defines the main URL routing for the entire Django project.
+
+URL Patterns:
+    - /admin/          : Django admin interface
+    - /api/            : RESTful API endpoints for task management
+    - /static/         : Static files (CSS, JS, images)
+    - /media/          : User-uploaded media files
+
+For more information on URL routing:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
 from celerytest import settings
@@ -21,12 +20,27 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.static import serve
 
+# Main URL patterns
 urlpatterns = [
+    # Django admin interface
     path('admin/', admin.site.urls),
+    
+    # Include app URLs (all API endpoints)
     path('', include('app.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
 
+# Serve media files in development
+# In production, use a web server (nginx/apache) to serve these
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Alternative static/media serving configuration
+# Useful for production if web server is not configured
 urlpatterns += [
-        re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-        re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
-    ]
+    # Serve media files
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    
+    # Serve static files
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+]
